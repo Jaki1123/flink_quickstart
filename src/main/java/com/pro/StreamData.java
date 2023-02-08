@@ -2,6 +2,11 @@ package com.pro;
 
 import com.pro.Pojo.Event;
 import com.pro.Source.ClickSource;
+import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -28,6 +33,7 @@ import org.apache.flink.util.TimeUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class StreamData {
@@ -35,9 +41,21 @@ public class StreamData {
      //创建执行环境
       StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
       //设置并行度
-      env.setParallelism(1);
-      //数据源
+//      env.setParallelism(1);
+      //获取数据源
       DataStreamSource<Event> eventDataStreamSource = env.addSource(new ClickSource());
+      //水位线:有序流:当前最大时间戳
+      eventDataStreamSource.assignTimestampsAndWatermarks(
+              WatermarkStrategy.<Event>forMonotonousTimestamps()
+                      .withTimestampAssigner((SerializableTimestampAssigner<Event>) (element, recordTimestamp) -> element.times)
+      );
+      //水位线:乱序流:延迟N秒获取数据
+//      eventDataStreamSource.assignTimestampsAndWatermarks(
+//              WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(5))
+//                      .withTimestampAssigner((SerializableTimestampAssigner<Event>) (element, recordTimestamp) -> element.times)
+//      );
+      //水位线:自定义水位线:重写WatermarkGenerator接口
+
     // flatmap
       SingleOutputStreamOperator<Tuple2<String, String>> returns = eventDataStreamSource
               .flatMap(
