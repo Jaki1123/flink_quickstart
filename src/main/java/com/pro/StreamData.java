@@ -41,10 +41,10 @@ public class StreamData {
                       .reduce((ReduceFunction<Tuple2<String, Integer>>) (value1, value2) -> Tuple2.of(value1.f0,Integer.valueOf(value2.f1+value1.f1))).print();
 
 
-      //map
-//      SingleOutputStreamOperator<String> map = eventDataStreamSource.map((MapFunction<Event, String>) value -> value.user);
-      //fiter
-//      SingleOutputStreamOperator<String> filterresult = map.filter((FilterFunction<String>) value -> value.equals("Duzhixin"));
+//      map
+      SingleOutputStreamOperator<String> map = eventDataStreamSource.map((MapFunction<Event, String>) value -> value.user);
+//      fiter
+      SingleOutputStreamOperator<String> filterresult = map.filter((FilterFunction<String>) value -> value.equals("Duzhixin"));
 
       env.execute();
   }
