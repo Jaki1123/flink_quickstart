@@ -27,6 +27,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
 import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
+import org.apache.flink.streaming.api.windowing.assigners.*;
+import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.TimeUtils;
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 public class StreamData {
   public static void main(String[] args) throws Exception {
-     //创建执行环境
+      //创建执行环境
       StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
       //设置并行度
 //      env.setParallelism(1);
@@ -70,7 +72,25 @@ public class StreamData {
       SingleOutputStreamOperator<Tuple2<String, Integer>> usercount = returns.filter(value -> value.f0.equals("user"))
               .map(nametuple -> Tuple2.of(nametuple.f1, 1)).returns(Types.TUPLE(Types.STRING, Types.INT))
               .keyBy(value -> value.f0)
+              //时间窗口:滚动处理时间窗口,窗口大小5s
+//              .window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
+              //时间窗口:滑动处理时间窗口，窗口大小10s，滑动长度5s
+//              .window(SlidingProcessingTimeWindows.of(Time.seconds(10),Time.seconds(5)))
+              //时间窗口：会话处理时间窗口,会话间隙10s
+//              .window(ProcessingTimeSessionWindows.withGap(Time.seconds(10)))
+              //时间窗口：绘画处理时间窗口，动态配置会话间隙
+//              .window(ProcessingTimeSessionWindows.withDynamicGap((SessionWindowTimeGapExtractor<Tuple2<String, Integer>>) element -> element.f0.length()*1000))
+              //计数窗口：滚动计数窗口
+//              .countWindow(10)
+              //计数窗口：滑动计数窗口
+              .countWindow(2,1)
+
               .reduce((ReduceFunction<Tuple2<String, Integer>>) (value1, value2) -> Tuple2.of(value1.f0, Integer.valueOf(value2.f1 + value1.f1)));
+
+
+
+
+
 
       //写入文件
       StreamingFileSink<String> fileSink = StreamingFileSink.forRowFormat(new Path("./output"), new SimpleStringEncoder<String>("UTF-8"))
