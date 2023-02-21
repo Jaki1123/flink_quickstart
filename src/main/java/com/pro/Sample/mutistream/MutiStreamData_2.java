@@ -13,7 +13,7 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 
 public class MutiStreamData_2 {
-    //分流
+    //合流
     public static void main(String[] args) throws Exception {
         //创建环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
