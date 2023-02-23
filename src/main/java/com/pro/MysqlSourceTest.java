@@ -1,37 +1,36 @@
 package com.pro;
 
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
-import com.ververica.cdc.debezium.StringDebeziumDeserializationSchema;
-import com.ververica.cdc.connectors.mysql.MySqlSource;
-
-import java.util.Properties;
+import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
+import com.ververica.cdc.connectors.mysql.source.MySqlSource;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
+import org.apache.flink.util.Collector;
 
 public class MysqlSourceTest {
   public static void main(String[] args) throws Exception {
-    //
-    Properties properties = new Properties();
-//    properties.put("snapshot.locking.mode", "none");
-
-    SourceFunction<String> source = MySqlSource.<String>builder()
-            .hostname("jdbc:mysql://rm-.mysql.rds.aliyuncs.com")
+    MySqlSource<String> mySqlSource = MySqlSource.<String>builder()
+            .hostname("jdbc:mysql://rm-uf612919l8r784nql.mysql.rds.aliyuncs.com")
             .port(3306)
-            .databaseList("")
-            .tableList("")
-            .username("")
-            .password("")
-            .deserializer(new StringDebeziumDeserializationSchema())
-//            .debeziumProperties(properties)
+            .databaseList("onedata_dev")
+            .tableList("onedata_dev.eventinfo")
+            .username("srv_onedata_dev")
+            .password("vnmUUd$hNwg3")
+            .deserializer(new JsonDebeziumDeserializationSchema()) // converts SourceRecord to JSON String
             .build();
 
-
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-    env.enableCheckpointing(300);
-    env.addSource(source)
-            .print()
-            .setParallelism(1)
-            ;
 
-    env.execute("mysqlcdc");
+    // enable checkpoint
+    env.enableCheckpointing(3000);
+
+    env
+            .fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "MySQL Source")
+            // set 4 parallel source tasks
+            .setParallelism(4)
+            .print().setParallelism(1); // use parallelism 1 for sink to keep message ordering
+
+    env.execute("Print MySQL Snapshot + Binlog");
   }
 }
+
