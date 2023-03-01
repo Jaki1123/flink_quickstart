@@ -37,13 +37,12 @@
             <version>1.13.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-kafka_2.12</artifactId>
-            <version>1.13.0</version>
-        </dependency>
-
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.flink</groupId>-->
+<!--            <artifactId>flink-connector-kafka_2.12</artifactId>-->
+<!--            <version>1.13.0</version>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
@@ -57,6 +56,7 @@
             <artifactId>flink-connector-jdbc_2.12</artifactId>
             <version>1.13.0</version>
             <scope>compile</scope>
+<!--            <scope>provided</scope>-->
         </dependency>
 
 
@@ -67,18 +67,6 @@
             <version>${flink.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.ververica/flink-connector-mysql-cdc -->
-        <dependency>
-            <groupId>com.ververica</groupId>
-            <artifactId>flink-connector-mysql-cdc</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-table_2.12</artifactId>
-            <version>1.7.0</version>
-        </dependency>
 
 
 
@@ -104,4 +92,62 @@
 
     </dependencies>
 
+
+    <!--④ maven-shade-plugin-->
+    <build>
+        <plugins>
+            <!-- ④ maven-shade-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!--资源转换 在打包时，存在将多个构件中的class文件或资源文件聚合的需求。shade插件提供了丰富的Transformer工具类。这里介绍一些常用的Transformer-->
+                            <transformers>
+                                <!--ManifestResourceTransformer可以轻松实现往MANIFEST文件中写入Main-Class，这是可执行包的必要条件-->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.pro.Sample.StreamTopnData</mainClass>
+                                </transformer>
+                                <!--AppendingTransformer用来处理多个jar包中存在重名的配置文件的合并，尤其是spring-->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>version.conf</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>akka-http-version.conf</resource>
+                                </transformer>
+                                <!--ServicesResourceTransformer JDK的服务发现机制是基于META-INF/services/目录的，如果同一接口存在多个实现需要合并 ，则可以使用此Transformer-->
+                                <!--<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>-->
+                            </transformers>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+
+                            <!--过滤不需要的jar包-->
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>io.spray:spray-json_2.11:jar:</exclude>
+                                    <exclude>org.slf4j:slf4j-api:jar:</exclude>
+                                    <exclude>org.slf4j:slf4j-log4j12:jar:</exclude>
+                                    <exclude>log4j:log4j:jar:</exclude>
+                                    <exclude>commons-logging:commons-logging:jar:</exclude>
+                                    <exclude>commons-lang:commons-lang:jar:</exclude>
+                                </excludes>
+                            </artifactSet>
+
+                            <!--配置<minimizeJar>将项目中没有使用的依赖自动移除，使项目最小化-->
+                            <minimizeJar>true</minimizeJar>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
