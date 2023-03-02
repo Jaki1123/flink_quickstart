@@ -7,6 +7,7 @@ com\pro\Sample\mutistream\MutiStreamData_2.class
 com\pro\Sample\mutistream\MutiStreamData$2.class
 com\pro\Sample\states\ValueStateStream$1.class
 com\pro\Sample\StreamTopnData$newAggAllFunction.class
+com\pro\Source\MysqlCDCDataSource.class
 com\pro\Sample\states\OperatorStateStream$BufferSinkFunction.class
 com\pro\Sample\states\ReduceStateStream$1.class
 com\pro\StreamToMysql.class

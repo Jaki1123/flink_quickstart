@@ -37,13 +37,6 @@
             <version>1.13.0</version>
         </dependency>
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.flink</groupId>-->
-<!--            <artifactId>flink-connector-kafka_2.12</artifactId>-->
-<!--            <version>1.13.0</version>-->
-<!--        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
             <groupId>mysql</groupId>
@@ -55,11 +48,9 @@
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-jdbc_2.12</artifactId>
             <version>1.13.0</version>
-            <scope>compile</scope>
+<!--            <scope>compile</scope>-->
 <!--            <scope>provided</scope>-->
         </dependency>
-
-
 
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -67,8 +58,11 @@
             <version>${flink.version}</version>
         </dependency>
 
-
-
+        <dependency>
+            <groupId>com.ververica</groupId>
+            <artifactId>flink-connector-mysql-cdc</artifactId>
+            <version>2.2.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -92,6 +86,30 @@
 
     </dependencies>
 
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>oss.sonatype.org-snapshot</id>-->
+<!--            <name>OSS Sonatype Snapshot Repository</name>-->
+<!--            <url>http://oss.sonatype.org/content/repositories/snapshots</url>-->
+<!--            <releases>-->
+<!--                <enabled>false</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>true</enabled>-->
+<!--            </snapshots>-->
+<!--        </repository>-->
+<!--        <repository>-->
+<!--            <id>apache.snapshots</id>-->
+<!--            <name>Apache Development Snapshot Repository</name>-->
+<!--            <url>https://repository.apache.org/content/repositories/snapshots/</url>-->
+<!--            <releases>-->
+<!--                <enabled>false</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>true</enabled>-->
+<!--            </snapshots>-->
+<!--        </repository>-->
+<!--    </repositories>-->
 
     <!--④ maven-shade-plugin-->
     <build>
@@ -100,7 +118,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -112,7 +130,7 @@
                             <transformers>
                                 <!--ManifestResourceTransformer可以轻松实现往MANIFEST文件中写入Main-Class，这是可执行包的必要条件-->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.pro.Sample.StreamTopnData</mainClass>
+                                    <mainClass>com.pro.Source.MysqlCDCDataSource</mainClass>
                                 </transformer>
                                 <!--AppendingTransformer用来处理多个jar包中存在重名的配置文件的合并，尤其是spring-->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
